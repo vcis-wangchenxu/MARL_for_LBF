@@ -1,0 +1,28 @@
+# 基础配置
+algo: algorithms.idqn.IDQN       # 算法类路径
+env: Foraging-8x8-2p-2f-v3       # 环境 ID
+sight: 8                         # 视野范围 (LBF 环境特有参数)
+device: cuda                     # 计算设备 (cuda 或 cpu)
+
+# 训练流程控制
+max_steps: 200000                # 总训练步数 (控制训练结束)
+eval_freq: 20                    # 评估频率 (每隔多少个 Episode 评估一次)
+max_steps_per_episode: 50        # 每个回合最大步数 (LBF环境默认50)
+seeds: [1, 42, 100]              # 随机种子列表 (用于多次实验) 
+
+# DQN 核心参数
+lr: 0.0003                       # 学习率
+gamma: 0.99                      # 折扣因子
+batch_size: 128                  # 每次更新的 Batch Size
+hidden_dim: 64                   # 网络隐藏层维度
+sequence_length: 24              # DRQN 采样的序列长度
+target_update_freq: 1            # 目标网络更新频率 (步数)
+
+# Replay Buffer
+buffer_capacity: 100000          # 经验池大小
+warmup_steps: 2000               # 热身步数 (超过这个步数才开始训练)
+
+# Epsilon-Greedy 探索策略
+epsilon_start: 1.0               # 初始探索率
+epsilon_end: 0.05                # 最终探索率
+epsilon_decay: 60000             # 衰减周期 (步数)
