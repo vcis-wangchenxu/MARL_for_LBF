@@ -115,8 +115,8 @@ epsilon_decay: 20000
 | 其它 | Mean-Field MARL | ⬜ |
 | 其它 | Centralized Critic Variants | ⬜ |
 
-> 说明：目前仓库中已经包含 `IDQN`（`algorithms/idqn.py` + `networks/DRQN.py` 等），因此该项已标记为 ✅。  
-> 其他算法可以在现有代码结构基础上逐步补齐，并同步更新此表。
+<!-- > 说明：目前仓库中已经包含 `IDQN`（`algorithms/idqn.py` + `networks/DRQN.py` 等），因此该项已标记为 ✅。  
+> 其他算法可以在现有代码结构基础上逐步补齐，并同步更新此表。 -->
 
 ---
 
@@ -172,7 +172,7 @@ marl_for_lbf/
   - Cooperative Multi-Agent Reinforcement Learning in Sequential Social Dilemmas  
   - Value-Decomposition Networks For Cooperative Multi-Agent Learning  
   - QMIX: Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning  
-  - 等等（可根据你的阅读列表自行补充）
+  - 等等
 
 ---
 
