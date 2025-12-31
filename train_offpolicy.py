@@ -55,17 +55,29 @@ def train(cfg, env, eval_env, agent, buffer):
 
         current_hidden_np = hidden_state.cpu().numpy()
         # next_hidden_np = next_hidden_state.detach().cpu().numpy()
+        
+        # Construct State if needed (for QMIX)
+        # LBFWrapper defines state_shape but doesn't return state in step()
+        # We construct it by flattening obs: (num_envs, N, C, H, W) -> (num_envs, N*C, H, W)
+        state = None
+        next_state = None
+        
+        if buffer.use_state:
+            # obs: (num_envs, N, C, H, W)
+            B, N, C, H, W = obs.shape
+            state = obs.reshape(B, N*C, H, W)
+            next_state = next_obs.reshape(B, N*C, H, W)
 
         # Push BATCH data to buffer outside the loop
         buffer.push(
             obs=obs,
             hidden=current_hidden_np,
-            state=None,
+            state=state,
             actions=actions,
             rewards=rewards,
             dones=dones,
             next_obs=next_obs,
-            next_state=None
+            next_state=next_state
         )
 
         for i in range(cfg.num_envs):
