@@ -1,0 +1,42 @@
+algo: algorithms.vdn.VDN
+policy_type: off-policy
+env: Foraging-8x8-2p-2f-v3
+# eval_env: Foraging-10x10-2p-2f-v3 # Optional: Environment for evaluation (generalization test)
+# eval_seed: 2024                   # Optional: Fixed seed for evaluation
+sight: 8
+seeds: [1, 42, 100]
+num_envs: 8
+device: cuda
+run_dir: results
+
+# Swanlab (Experiment Tracking)
+use_swanlab: True
+project_name: LBF_MARL-Benchmark
+
+# Train Control
+max_steps: 2000000
+eval_freq: 500          
+log_freq: 10            
+
+# Buffer & Sampling
+buffer_capacity: 100000
+warmup_steps: 2000      
+batch_size: 128          
+sequence_length: 16     
+
+# DRQN/VDN Params
+lr: 0.0005              
+gamma: 0.99
+rnn_hidden_dim: 64      
+rnn_layers: 1
+norm_factor: 10.0      
+share_parameters: True  
+
+# Target Network
+target_tau: 0.01       
+target_update_freq: 1   
+
+# Exploration (Epsilon-Greedy)
+epsilon_start: 1.0
+epsilon_end: 0.05
+epsilon_decay: 50000    
