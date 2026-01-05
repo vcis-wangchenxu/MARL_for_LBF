@@ -45,10 +45,12 @@ class QMIX:
                                    self.n_agents, self.hidden_dim,  
                                    norm_factor=self.norm_factor, 
                                    use_agent_id=True).to(self.device)
+
             self.target_agent = AgentDRQN(self.obs_shape, self.n_actions, 
                                           self.n_agents, self.hidden_dim, 
                                           norm_factor=self.norm_factor, 
                                           use_agent_id=True).to(self.device)
+
             self.target_agent.load_state_dict(self.agent.state_dict())
         else:
             print(f"[QMIX] Parameter Sharing Disabled. Creating {self.n_agents} independent DRQNs.")
@@ -73,9 +75,11 @@ class QMIX:
         self.mixer = QMixer(self.n_agents, self.state_shape, 
                             mixing_embed_dim=getattr(args, 'mixing_embed_dim', 32),
                             hypernet_embed=getattr(args, 'hypernet_embed', 64)).to(self.device)
+
         self.target_mixer = QMixer(self.n_agents, self.state_shape, 
                                    mixing_embed_dim=getattr(args, 'mixing_embed_dim', 32),
                                    hypernet_embed=getattr(args, 'hypernet_embed', 64)).to(self.device)
+        
         self.target_mixer.load_state_dict(self.mixer.state_dict())
 
         # Optimizer
@@ -89,7 +93,6 @@ class QMIX:
         self.criterion = nn.MSELoss()
 
     def init_hidden(self, batch_size=1) -> torch.Tensor:
-        # Same as VDN
         if self.share_params:
             h = self.agent.init_hidden(batch_size * self.n_agents, device=self.device)
             h = h.view(self.agent.rnn_layers, batch_size, self.n_agents, self.hidden_dim)
@@ -103,7 +106,6 @@ class QMIX:
 
     @torch.no_grad()
     def take_action(self, obs_tensor, hidden_state, current_step, evaluation=False):
-        # Same as VDN
         batch_size = obs_tensor.shape[0]
 
         if evaluation:
