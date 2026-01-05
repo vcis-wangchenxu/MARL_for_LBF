@@ -138,5 +138,5 @@ For more details, please refer to [LBF_use.md](LBF_use.md).
 | **VDN** | ✅ | [Value-Decomposition Networks For Cooperative Multi-Agent Learning](https://arxiv.org/abs/1706.05296) |
 | **IPPO** | ✅ | [Proximal Policy Optimization Algorithms](https://arxiv.org/abs/1707.06347) |
 | **QMIX** | ✅ | [QMIX: Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning](https://arxiv.org/abs/1803.11485) |
-| **MAPPO** | ❌ | [The Surprising Effectiveness of PPO in Cooperative Multi-Agent Games](https://arxiv.org/abs/2103.01955) |
-
+| **MAPPO** | ✅ | [The Surprising Effectiveness of PPO in Cooperative Multi-Agent Games](https://arxiv.org/abs/2103.01955) |
+| **other** | ❌ | [pass](https://arxiv.org/abs/2103.01955) |
