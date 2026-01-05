@@ -239,7 +239,8 @@ class IPPO:
             
             for sample in data_generator:
                 obs_batch, hidden_batch, actions_batch, values_batch, \
-                return_batch, old_action_log_probs_batch, adv_targ, masks_batch, agent_ids_batch = sample
+                return_batch, old_action_log_probs_batch, adv_targ, masks_batch, \
+                agent_ids_batch, state_batch = sample
                 
                 B, L, N, C, H, W = obs_batch.shape
                 

@@ -159,7 +159,7 @@ class ParallelRolloutBuffer:
         Yields:
             tuple: A tuple containing tensors for training:
                 - obs_batch: (Batch_Size, Chunk_Len, n_agents, *obs_shape)
-                - hidden_states_batch: (Batch_Size, Layers, n_agents, hidden_dim)
+                - hidden_states_batch: (Layers, Batch_Size, n_agents, hidden_dim)
                 - actions_batch: (Batch_Size, Chunk_Len, n_agents)
                 - values_batch: (Batch_Size, Chunk_Len, n_agents)
                 - returns_batch: (Batch_Size, Chunk_Len, n_agents)
@@ -167,6 +167,7 @@ class ParallelRolloutBuffer:
                 - advantages_batch: (Batch_Size, Chunk_Len, n_agents)
                 - masks_batch: (Batch_Size, Chunk_Len, n_agents)
                 - agent_ids: (Batch_Size, Chunk_Len, n_agents)
+                - state_batch: (Batch_Size, Chunk_Len, *state_shape)
         """
         T = self.buffer_size # Rollout length
         assert T % data_chunk_length == 0, "Buffer size must be divisible by chunk length"
@@ -196,6 +197,11 @@ class ParallelRolloutBuffer:
         batch_returns = _reshape_to_chunks(advantages + self.values[:T])
         batch_dones = _reshape_to_chunks(self.dones[:T])
         batch_advantages = _reshape_to_chunks(advantages)
+        
+        state_T = self.state[:T]
+        state_reshaped = state_T.reshape(num_chunks_per_env, data_chunk_length, self.num_envs, *state_T.shape[2:])
+        state_permuted = state_reshaped.transpose(0, 2, 1, *range(3, len(state_reshaped.shape)))
+        batch_state = state_permuted.reshape(total_chunks, data_chunk_length, *state_T.shape[2:]) # (Total_Chunks, Len, *State)
         
         # Calculate Masks on the fly
         batch_masks = 1.0 - batch_dones
@@ -234,7 +240,8 @@ class ParallelRolloutBuffer:
                 torch.from_numpy(batch_log_probs[mb_indices]).to(self.device),
                 torch.from_numpy(batch_advantages[mb_indices]).to(self.device),
                 torch.from_numpy(batch_masks[mb_indices]).to(self.device),
-                batch_agent_ids 
+                batch_agent_ids,
+                torch.from_numpy(batch_state[mb_indices]).to(self.device)
             )
 
     def clear(self):

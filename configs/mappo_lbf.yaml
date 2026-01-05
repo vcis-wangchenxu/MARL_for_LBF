@@ -1,0 +1,34 @@
+algo: algorithms.mappo.MAPPO
+policy_type: on-policy
+env: Foraging-8x8-2p-2f-v3
+sight: 8
+seeds: [1, 42, 100]
+num_envs: 8
+device: cuda
+run_dir: results
+share_parameters: True       
+
+# Train Control
+max_steps: 2000000
+eval_freq: 500
+log_freq: 100
+
+# Buffer & Sequence
+buffer_size: 128
+data_chunk_length: 16
+
+# PPO Params
+lr: 0.0005
+gamma: 0.99
+gae_lambda: 0.95
+clip_param: 0.2
+ppo_epochs: 4
+num_mini_batch: 4
+entropy_coef: 0.01
+value_loss_coef: 0.5
+max_grad_norm: 0.5
+
+# Network
+rnn_hidden_dim: 128 
+rnn_layers: 1
+norm_factor: 10.0
