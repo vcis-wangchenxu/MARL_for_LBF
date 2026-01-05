@@ -13,7 +13,7 @@ share_parameters: True
 # Train Control
 max_steps: 2000000
 eval_freq: 500
-log_freq: 10
+log_freq: 100
 
 # Buffer & Sequence
 buffer_size: 128        # Rollout Length
