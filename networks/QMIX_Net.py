@@ -12,20 +12,26 @@ class QMixer(nn.Module):
     def __init__(self, n_agents, state_shape, mixing_embed_dim=32, hypernet_embed=64):
         super(QMixer, self).__init__()
         self.n_agents = n_agents
-        self.state_shape = state_shape # (C, H, W)
+        self.state_shape = state_shape # (C, H, W) or (Dim,)
         self.embed_dim = mixing_embed_dim
 
-        C, H, W = state_shape    # C <- N*C
-        self.conv = nn.Sequential(
-            nn.Conv2d(C, 16, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Flatten()
-        )
-        # Calculate output dim
-        self.state_dim = 32 * H * W 
-        
+        if isinstance(state_shape, tuple) and len(state_shape) == 3:
+            # State is image (C, H, W)
+            self.use_cnn = True
+            C, H, W = state_shape
+            self.conv = nn.Sequential(
+                nn.Conv2d(C, 16, kernel_size=3, stride=1, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
+                nn.ReLU(),
+                nn.Flatten()
+            )
+            # Calculate output dim
+            self.state_dim = 32 * H * W 
+        else:
+            self.use_cnn = False
+            self.state_dim = state_shape[0] if isinstance(state_shape, tuple) else state_shape
+
         # Hypernetworks
         # Hyper w1: (state) -> (N * embed)
         self.hyper_w1 = nn.Sequential(
@@ -57,33 +63,36 @@ class QMixer(nn.Module):
         Returns:
             q_tot (torch.Tensor): (Batch, Seq_Len, 1)
         """
-        B, L, N = agent_qs.shape
+        B, T, N = agent_qs.shape
         
-        agent_qs = agent_qs.view(-1, 1, N) # (B*L, 1, N)
+        agent_qs = agent_qs.view(-1, 1, N) # (B*T, 1, N)
         
-        # states: (B, L, C, H, W) -> (B*L, C, H, W)
-        states = states.reshape(-1, *self.state_shape)
-        states = self.conv(states) # (B*L, state_dim)
+        if self.use_cnn:
+            # states: (B, T, C, H, W) -> (B*T, C, H, W)
+            states = states.reshape(-1, *self.state_shape)
+            states = self.conv(states) # (B*T, state_dim)
+        else:
+            states = states.reshape(-1, self.state_dim)
 
         # First layer
-        w1 = torch.abs(self.hyper_w1(states)) # (B*L, N * embed)
-        b1 = self.hyper_b1(states) # (B*L, embed)
+        w1 = torch.abs(self.hyper_w1(states)) # (B*T, N * embed)
+        b1 = self.hyper_b1(states) # (B*T, embed)
         
-        w1 = w1.view(-1, N, self.embed_dim) # (B*L, N, embed)
-        b1 = b1.view(-1, 1, self.embed_dim) # (B*L, 1, embed)
+        w1 = w1.view(-1, N, self.embed_dim) # (B*T, N, embed)
+        b1 = b1.view(-1, 1, self.embed_dim) # (B*T, 1, embed)
         
         # (B*T, 1, N) * (B*T, N, embed) -> (B*T, 1, embed)
         hidden = F.elu(torch.bmm(agent_qs, w1) + b1)
         
         # Second layer
-        w2 = torch.abs(self.hyper_w2(states)) # (B*L, embed)
-        b2 = self.hyper_b2(states) # (B*L, 1)
+        w2 = torch.abs(self.hyper_w2(states)) # (B*T, embed)
+        b2 = self.hyper_b2(states) # (B*T, 1)
         
-        w2 = w2.view(-1, self.embed_dim, 1) # (B*L, embed, 1)
+        w2 = w2.view(-1, self.embed_dim, 1) # (B*T, embed, 1)
         b2 = b2.view(-1, 1, 1)
         
         # (B*T, 1, embed) * (B*T, embed, 1) -> (B*T, 1, 1)
         y = torch.bmm(hidden, w2) + b2
         
-        q_tot = y.view(B, T, 1)
+        q_tot = y.view(B, T, 1)    # 
         return q_tot
